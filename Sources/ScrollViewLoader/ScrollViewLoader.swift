@@ -26,7 +26,7 @@ struct DelegateHolder<Content: View>: View {
         content
             .introspectScrollView { scrollView in
                 scrollView.delegate = offsetNotifier
-                scrollView.addObserver(offsetNotifier, forKeyPath: "contentSize", context: nil)
+                offsetNotifier.scrollView = scrollView
                 offsetNotifier.scrollViewDidScroll(scrollView)
             }
     }
@@ -38,6 +38,11 @@ class ScrollOffsetNotifier: NSObject, UIScrollViewDelegate, ObservableObject {
     private var canNotify = true
     private var trigger: OffsetTrigger
     private var oldContentHeight: Double = 0
+    weak var scrollView: UIScrollView? {
+        didSet {
+            scrollView?.addObserver(self, forKeyPath: "contentSize", context: nil)
+        }
+    }
     
     init(offsetTrigger: OffsetTrigger, onNotify: @escaping () async -> ()) {
         self.trigger = offsetTrigger
@@ -45,7 +50,7 @@ class ScrollOffsetNotifier: NSObject, UIScrollViewDelegate, ObservableObject {
     }
     
     deinit {
-        removeObserver(self, forKeyPath: "contentSize")
+        scrollView?.removeObserver(self, forKeyPath: "contentSize")
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {

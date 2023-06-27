@@ -13,6 +13,20 @@ struct ScrollViewLoaderTestApp: App {
 
 struct ContentView: View {
     
+    
+    var body: some View {
+        NavigationView {
+            NavigationLink(destination: DetailsSearch()) {
+                Text("Go to details")
+                    .padding()
+            }
+        }
+        
+        
+    }
+}
+
+struct DetailsSearch: View {
     @State var data: [Int] = Array(0..<1)
     
     var body: some View {
