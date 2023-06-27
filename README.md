@@ -10,6 +10,8 @@ Add `.shouldLoadMore` to any `ScrollView`. By default it will be triggered when 
 ## See it in action
 If you want to see it in a real app, check out [dateit](https://apps.apple.com/us/app/dateit/id1610780514)
 
+Also works well with [SwiftUI-Refresher](https://github.com/gh123man/SwiftUI-Refresher)
+
 ![Navigation](/images/2.gif)
 
 
