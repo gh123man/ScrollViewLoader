@@ -3,6 +3,12 @@ import SwiftUI
 import UIKit
 import Introspect
 
+public enum HeightChangeConfig {
+    case always
+    case after(TimeInterval)
+    case never
+}
+
 public enum OffsetTrigger {
     case relative(CGFloat)
     case absolute(CGFloat)
@@ -10,9 +16,26 @@ public enum OffsetTrigger {
 
 extension View {
     public func shouldLoadMore(bottomDistance offsetTrigger: OffsetTrigger = .relative(0.5),
-                        shouldLoadMore: @escaping () async -> ()) -> some View  {
+                               waitForHeightChange: HeightChangeConfig = .after(2),
+                               shouldLoadMore: @escaping () async -> ()) -> some View  {
         return DelegateHolder(offsetNotifier: ScrollOffsetNotifier(offsetTrigger: offsetTrigger,
+                                                                   waitForHeightChange: waitForHeightChange,
                                                                    onNotify: shouldLoadMore),
+                              content: self)
+    }
+    
+    public func shouldLoadMore(bottomDistance offsetTrigger: OffsetTrigger = .relative(0.5),
+                               waitForHeightChange: HeightChangeConfig = .after(2),
+                               shouldLoadMore: @escaping (_ done: @escaping () -> ()) -> ()) -> some View  {
+        return DelegateHolder(offsetNotifier: ScrollOffsetNotifier(offsetTrigger: offsetTrigger,
+                                                                   waitForHeightChange: waitForHeightChange,
+                                                                   onNotify: {
+            await withCheckedContinuation { continuation in
+                shouldLoadMore {
+                    continuation.resume()
+                }
+            }
+        }),
                               content: self)
     }
 }
@@ -38,15 +61,18 @@ class ScrollOffsetNotifier: NSObject, UIScrollViewDelegate, ObservableObject {
     private var canNotify = true
     private var trigger: OffsetTrigger
     private var oldContentHeight: Double = 0
+    private var waitForHeightChange: HeightChangeConfig
+    private var isTimerRunning = false
     weak var scrollView: UIScrollView? {
         didSet {
             scrollView?.addObserver(self, forKeyPath: "contentSize", context: nil)
         }
     }
     
-    init(offsetTrigger: OffsetTrigger, onNotify: @escaping () async -> ()) {
+    init(offsetTrigger: OffsetTrigger, waitForHeightChange: HeightChangeConfig, onNotify: @escaping () async -> ()) {
         self.trigger = offsetTrigger
         self.onNotify = onNotify
+        self.waitForHeightChange = waitForHeightChange
     }
     
     deinit {
@@ -73,14 +99,32 @@ class ScrollOffsetNotifier: NSObject, UIScrollViewDelegate, ObservableObject {
         }
         
         let bottomOffset = (scrollView.contentSize.height + scrollView.contentInset.bottom) - (scrollView.contentOffset.y + scrollView.visibleSize.height)
+        var heightChanged = false
+        
+        switch waitForHeightChange {
+        case .always:
+            heightChanged = oldContentHeight != scrollView.contentSize.height
+        case .after(let timeInterval):
+            heightChanged = oldContentHeight != scrollView.contentSize.height
+            if !isTimerRunning {
+                isTimerRunning = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + timeInterval) {
+                    self.oldContentHeight = 0
+                    self.isTimerRunning = false
+                }
+            }
+        case .never:
+            heightChanged = true
+        }
         
         Task { @MainActor in
-            if bottomOffset < triggerHeight, canNotify {
+            guard canNotify else { return }
+            if bottomOffset < triggerHeight, heightChanged {
                 oldContentHeight = scrollView.contentSize.height
                 canNotify = false
                 await onNotify()
+                canNotify = true
             }
-            canNotify = bottomOffset >= triggerHeight || oldContentHeight != scrollView.contentSize.height
         }
     }
 }

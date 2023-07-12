@@ -63,6 +63,28 @@ Set the absolute offset to a fixed value:
 }
 ```
 
+### `waitForHeightChange`
+
+It may be desirable for `shouldLoadMore` to be called whenever the user scrolls - even if the scroll view content didn't change. You can change this behavior with `waitForHeightChange`: 
+```swift 
+.shouldLoadMore(waitForHeightChange: .never) { 
+    // Will be called regardless of if the height changed from a previous update
+}
+```
+
+```swift 
+.shouldLoadMore(waitForHeightChange: .always) { 
+    // Will only be called if the content height changed since last time
+}
+```
+
+```swift 
+.shouldLoadMore(waitForHeightChange: .after(2)) { 
+    // Will only be called if the content height changed since last time or after 2 seconds of no change
+}
+```
+and now `shouldLoadMore` will be called whenever it's in the offset threshold. By default `waitForHeightChange` is `true` so the function doesn't get called in quick succession when no content updates are made. 
+
 ## More details
 
 - The callback will only be called once when the bottom approaches. 
@@ -71,6 +93,17 @@ Set the absolute offset to a fixed value:
 - Loading conditions will be re-evaluated if the scroll view content changes in any way. 
 
 # More Examples
+
+## Using a completion handler instead of `async`
+
+```swift
+.shouldLoadMore { done in
+    loadYourContent {
+        data.append(data.last! + 1)
+        done() // Call done so shouldLoadMore can be called again later
+    }
+}
+```
 
 Larger batching 
 

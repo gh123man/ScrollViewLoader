@@ -41,6 +41,13 @@ struct DetailsSearch: View {
                     .scaleEffect(2)
             }
         }
+//        .shouldLoadMore { done in
+//            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(200)) {
+//                data.append(data.last! + 1)
+//                print("foo")
+//                done()
+//            }
+//        }
         .shouldLoadMore {
             await Task.sleep(seconds: 0.1)
 //            data.append(contentsOf: (data.last! + 1)...data.last! + 100)
