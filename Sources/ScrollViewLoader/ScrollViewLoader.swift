@@ -5,7 +5,7 @@ import Introspect
 
 public enum HeightChangeConfig {
     case always
-    case after(TimeInterval)
+    case until(TimeInterval)
     case never
 }
 
@@ -16,7 +16,7 @@ public enum OffsetTrigger {
 
 extension View {
     public func shouldLoadMore(bottomDistance offsetTrigger: OffsetTrigger = .relative(0.5),
-                               waitForHeightChange: HeightChangeConfig = .after(2),
+                               waitForHeightChange: HeightChangeConfig = .until(2),
                                shouldLoadMore: @escaping () async -> ()) -> some View  {
         return DelegateHolder(offsetNotifier: ScrollOffsetNotifier(offsetTrigger: offsetTrigger,
                                                                    waitForHeightChange: waitForHeightChange,
@@ -25,7 +25,7 @@ extension View {
     }
     
     public func shouldLoadMore(bottomDistance offsetTrigger: OffsetTrigger = .relative(0.5),
-                               waitForHeightChange: HeightChangeConfig = .after(2),
+                               waitForHeightChange: HeightChangeConfig = .until(2),
                                shouldLoadMore: @escaping (_ done: @escaping () -> ()) -> ()) -> some View  {
         return DelegateHolder(offsetNotifier: ScrollOffsetNotifier(offsetTrigger: offsetTrigger,
                                                                    waitForHeightChange: waitForHeightChange,
@@ -104,7 +104,7 @@ class ScrollOffsetNotifier: NSObject, UIScrollViewDelegate, ObservableObject {
         switch waitForHeightChange {
         case .always:
             heightChanged = oldContentHeight != scrollView.contentSize.height
-        case .after(let timeInterval):
+        case .until(let timeInterval):
             heightChanged = oldContentHeight != scrollView.contentSize.height
             if !isTimerRunning {
                 isTimerRunning = true

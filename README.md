@@ -68,7 +68,7 @@ Set the absolute offset to a fixed value:
 It may be desirable for `shouldLoadMore` to be called whenever the user scrolls - even if the scroll view content didn't change. You can change this behavior with `waitForHeightChange`: 
 ```swift 
 .shouldLoadMore(waitForHeightChange: .never) { 
-    // Will be called regardless of if the height changed from a previous update
+    // Will be called regardless of if the content height changed from a previous update
 }
 ```
 
@@ -79,7 +79,7 @@ It may be desirable for `shouldLoadMore` to be called whenever the user scrolls 
 ```
 
 ```swift 
-.shouldLoadMore(waitForHeightChange: .after(2)) { 
+.shouldLoadMore(waitForHeightChange: .until(2)) { 
     // Will only be called if the content height changed since last time or after 2 seconds of no change
 }
 ```
