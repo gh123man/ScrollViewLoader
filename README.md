@@ -83,7 +83,7 @@ It may be desirable for `shouldLoadMore` to be called whenever the user scrolls 
     // Will only be called if the content height changed since last time or after 2 seconds of no change
 }
 ```
-and now `shouldLoadMore` will be called whenever it's in the offset threshold. By default `waitForHeightChange` is `true` so the function doesn't get called in quick succession when no content updates are made. 
+By default `waitForHeightChange` is `.until(2)` so the function doesn't get called in quick succession when no content updates are made. 
 
 ## More details
 
