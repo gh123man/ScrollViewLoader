@@ -1,7 +1,7 @@
 
 import SwiftUI
 import UIKit
-import Introspect
+import SwiftUIIntrospect
 
 public enum HeightChangeConfig {
     case always
@@ -47,7 +47,7 @@ struct DelegateHolder<Content: View>: View {
     
     var body: some View {
         content
-            .introspectScrollView { scrollView in
+            .introspect(.scrollView, on: .iOS(.v15, .v16, .v17)) { scrollView in
                 scrollView.delegate = offsetNotifier
                 offsetNotifier.scrollView = scrollView
                 offsetNotifier.scrollViewDidScroll(scrollView)
