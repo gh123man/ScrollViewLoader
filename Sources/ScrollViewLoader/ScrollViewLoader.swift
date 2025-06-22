@@ -47,7 +47,7 @@ struct DelegateHolder<Content: View>: View {
     
     var body: some View {
         content
-            .introspect(.scrollView, on: .iOS(.v15, .v16, .v17, .v18)) { scrollView in
+            .introspect(.scrollView, on: .iOS(.v15, .v16, .v17, .v18, .v26)) { scrollView in
                 scrollView.delegate = offsetNotifier
                 offsetNotifier.scrollView = scrollView
                 offsetNotifier.scrollViewDidScroll(scrollView)
